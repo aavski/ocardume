@@ -7,7 +7,7 @@ let imageUrls = [];
 let displayedImageUrls = new Set();
 let draggedTile = null;
 let draggedTileIndex = {i: -1, j: -1};
-let fadeDuration = 30; // Reduce the duration for faster fade-in
+let fadeDuration = 10; // Reduce the duration for faster fade-in
 let alphaValues = [];
 let isDragging = false;
 
