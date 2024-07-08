@@ -1,38 +1,46 @@
 let grid = [];
-let gridSize = 4; // Size of the grid (e.g., 4x4)
-let totalImages = 216; // Total number of images available
-let displayedImages = 20; // Number of images to display at once
+let gridSize;
+let totalImages = 216;
+let displayedImages;
 let tileSize;
 let imageUrls = [];
-let displayedImageUrls = new Set(); // Track displayed images
+let displayedImageUrls = new Set();
 let draggedTile = null;
 let draggedTileIndex = {i: -1, j: -1};
-let fadeDuration = 60; // Duration for fade effect in frames
-let alphaValues = []; // Store alpha values for fade effect
+let fadeDuration = 60;
+let alphaValues = [];
 let isDragging = false;
 
 function preload() {
-  // Preload image URLs
   for (let i = 0; i < totalImages; i++) {
-    imageUrls.push(`https://ocardu.me/wp-content/uploads/GRID/SMALL/tile${i}.jpg`);
+    imageUrls.push('assets/images/tile' + i + '.jpg');
   }
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  adjustGridSize();
   tileSize = min(width, height) / gridSize;
-  background(255); // Set background to white
+  background(255);
   initGrid();
   initAlphaValues();
   drawGrid();
 }
 
-function initGrid() {
-  // Calculate the number of blank tiles
-  let totalTiles = gridSize * gridSize;
-  let blankTiles = floor(totalTiles * 0.2); // 20% blank tiles
+function adjustGridSize() {
+  if (windowWidth < 600) {
+    gridSize = 3;
+    displayedImages = 9;
+  } else {
+    gridSize = 4;
+    displayedImages = 16;
+  }
+}
 
-  // Select random images for the grid
+function initGrid() {
+  let totalTiles = gridSize * gridSize;
+  let blankTiles = floor(totalTiles * 0.2);
+
   let selectedImages = [];
   while (selectedImages.length < displayedImages) {
     let index = floor(random(totalImages));
@@ -46,14 +54,14 @@ function initGrid() {
   let imageIndexes = [];
   for (let i = 0; i < totalTiles; i++) {
     if (i < blankTiles) {
-      imageIndexes.push(-1); // Empty tile
+      imageIndexes.push(-1);
     } else if (i < blankTiles + displayedImages) {
       imageIndexes.push(i - blankTiles);
     } else {
-      imageIndexes.push(-1); // Extra empty tiles
+      imageIndexes.push(-1);
     }
   }
-  shuffle(imageIndexes, true); // Shuffle the array to randomize grid
+  shuffle(imageIndexes, true);
 
   let k = 0;
   for (let i = 0; i < gridSize; i++) {
@@ -61,14 +69,13 @@ function initGrid() {
     for (let j = 0; j < gridSize; j++) {
       let idx = imageIndexes[k++];
       if (idx != -1) {
-        // Load image dynamically with error handling
         grid[i][j] = loadImage(selectedImages[idx], img => {
           grid[i][j] = img;
-          drawGrid(); // Redraw grid after each image is loaded
+          drawGrid();
         }, err => {
-          console.error(`Failed to load image: ${selectedImages[idx]}`);
+          console.error('Failed to load image: ' + selectedImages[idx]);
           grid[i][j] = null;
-          drawGrid(); // Redraw grid to show empty tile
+          drawGrid();
         });
       } else {
         grid[i][j] = null;
@@ -88,8 +95,8 @@ function initAlphaValues() {
 }
 
 function drawGrid() {
-  clear(); // Clear the canvas before drawing
-  background(255); // Set background to white
+  clear();
+  background(255);
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
       let x = j * tileSize;
@@ -99,7 +106,6 @@ function drawGrid() {
         image(grid[i][j], x, y, tileSize, tileSize);
         noTint();
       } else {
-        // Draw empty space
         fill(255);
         noStroke();
         rect(x, y, tileSize, tileSize);
@@ -116,21 +122,20 @@ function mousePressed() {
     if (grid[i][j]) {
       draggedTile = grid[i][j];
       draggedTileIndex = {i, j};
-      displayedImageUrls.delete(draggedTile.url); // Remove the image from the set
-      grid[i][j] = null; // Make the original tile blank while dragging
+      displayedImageUrls.delete(draggedTile.url);
+      grid[i][j] = null;
       drawGrid();
     } else {
       let newImageUrl;
       do {
         let newImageIndex = floor(random(totalImages));
         newImageUrl = imageUrls[newImageIndex];
-      } while (displayedImageUrls.has(newImageUrl)); // Ensure the image is not already displayed
-
+      } while (displayedImageUrls.has(newImageUrl));
       loadImage(newImageUrl, img => {
         grid[i][j] = img;
-        img.url = newImageUrl; // Store the image URL in the image object
+        img.url = newImageUrl;
         displayedImageUrls.add(newImageUrl);
-        startFadeIn(i, j); // Start fade in animation
+        startFadeIn(i, j);
       });
     }
   }
@@ -154,10 +159,10 @@ function mouseReleased() {
       let swapTile = grid[i][j];
       grid[i][j] = draggedTile;
       grid[draggedTileIndex.i][draggedTileIndex.j] = swapTile;
-      displayedImageUrls.add(draggedTile.url); // Add the dragged tile's URL back to the set
+      displayedImageUrls.add(draggedTile.url);
     } else {
       grid[draggedTileIndex.i][draggedTileIndex.j] = draggedTile;
-      displayedImageUrls.add(draggedTile.url); // Add the dragged tile's URL back to the set
+      displayedImageUrls.add(draggedTile.url);
     }
     draggedTile = null;
     drawGrid();
@@ -179,7 +184,7 @@ function startFadeOut(i, j) {
     } else {
       drawGrid();
     }
-  }, 1000 / 60); // Approx. 60 frames per second
+  }, 1000 / 60);
 }
 
 function startFadeIn(i, j) {
@@ -193,5 +198,5 @@ function startFadeIn(i, j) {
     } else {
       drawGrid();
     }
-  }, 1000 / 60); // Approx. 60 frames per second
+  }, 1000 / 60);
 }
