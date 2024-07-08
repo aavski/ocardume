@@ -7,7 +7,6 @@ let imageUrls = [];
 let displayedImageUrls = new Set();
 let draggedTile = null;
 let draggedTileIndex = {i: -1, j: -1};
-let fadeDuration = 10; // Reduce the duration for faster fade-in
 let alphaValues = [];
 let isDragging = false;
 
@@ -102,9 +101,7 @@ function drawGrid() {
       let x = j * tileSize;
       let y = i * tileSize;
       if (grid[i][j]) {
-        tint(255, alphaValues[i][j]);
         image(grid[i][j], x, y, tileSize, tileSize);
-        noTint();
       } else {
         fill(255);
         noStroke();
@@ -135,7 +132,7 @@ function mousePressed() {
         grid[i][j] = img;
         img.url = newImageUrl;
         displayedImageUrls.add(newImageUrl);
-        startFadeIn(i, j);
+        drawGrid();
       });
     }
   }
@@ -167,36 +164,9 @@ function mouseReleased() {
     draggedTile = null;
     drawGrid();
   } else if (draggedTile) {
-    startFadeOut(draggedTileIndex.i, draggedTileIndex.j);
+    grid[draggedTileIndex.i][draggedTileIndex.j] = draggedTile;
     draggedTile = null;
+    drawGrid();
   }
   isDragging = false;
-}
-
-function startFadeOut(i, j) {
-  let fadeOutInterval = setInterval(() => {
-    alphaValues[i][j] -= 255 / fadeDuration;
-    if (alphaValues[i][j] <= 0) {
-      clearInterval(fadeOutInterval);
-      grid[i][j] = null;
-      alphaValues[i][j] = 255;
-      drawGrid();
-    } else {
-      drawGrid();
-    }
-  }, 1000 / 60);
-}
-
-function startFadeIn(i, j) {
-  alphaValues[i][j] = 0;
-  let fadeInInterval = setInterval(() => {
-    alphaValues[i][j] += 255 / fadeDuration;
-    if (alphaValues[i][j] >= 255) {
-      clearInterval(fadeInInterval);
-      alphaValues[i][j] = 255;
-      drawGrid();
-    } else {
-      drawGrid();
-    }
-  }, 1000 / 60);
 }
